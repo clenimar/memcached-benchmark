@@ -10,13 +10,17 @@ import memcache
 def run(client, target=1000000):
     """run benchmark against a memcached server."""
     # start timer
+    pool = pylibmc.ClientPool(mc, 10)
     starttime = time.time()
     # request count
     r = 0
 
     while r < target:
+        with pool.reserve() as mc:
         # do request
-        client.get('bench_key_53')
+
+
+            client.get('bench_key_53')
         r += 1
 
     endtime = time.time()
