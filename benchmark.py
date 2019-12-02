@@ -20,12 +20,12 @@ def run(client, target=1000000):
         r += 1
 
     endtime = time.time()
-    print(starttime, endtime, r)
+    delta = (endtime - starttime)
 
     # average RPS
-    avg_rps = r / (endtime - starttime)
+    avg_rps = r / delta
 
-    return avg_rps
+    return avg_rps, delta
 
 
 if __name__ == "__main__":
@@ -40,4 +40,5 @@ if __name__ == "__main__":
         mc.set('bench_key_%d' % n, 'bench_value_%d' % n)
     
     # run and print results
-    print(run(mc, target=args.target))
+    result = run(mc, target=args.target)
+    print("exp. time: %f seconds\navg. rps: %f" % (result[1], result[0]))
