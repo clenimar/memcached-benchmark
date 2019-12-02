@@ -2,12 +2,17 @@ import argparse
 import time
 
 # pylibmc (implemented in C)
-import pylibmc
+#import pylibmc
 # python-memcached (implemented in Python)
-import memcache
+#import memcache
+
+import socket
+from pymemcache.client.hash import HashClient
 
 
-def run(pool, target=1000000):
+
+
+def run(client, target=1000000):
     """run benchmark against a memcached server."""
     # start timer
     starttime = time.time()
@@ -15,11 +20,10 @@ def run(pool, target=1000000):
     r = 0
 
     while r < target:
-        with pool.reserve() as client:
         # do request
 
 
-            client.get('bench_key_53')
+        client.get('bench_key_53')
         r += 1
 
     endtime = time.time()
@@ -40,12 +44,18 @@ if __name__ == "__main__":
     addresses = args.addresses.split(',')
     print(addresses)
     # start client and load memcached w/ 200 keys
-    mc = pylibmc.Client(addresses, binary=True,behaviors={"tcp_nodelay": True,"ketama": True})
-    pool = pylibmc.ClientPool(mc, 10)
+    _, _, ips = socket.gethostbyname_ex('mycache-memcached.default.svc.cluster.local')
+
+    servers = [(ip, 11211) for ip in ips]
+    client = HashClient(servers, use_pooling=True)
+
+
+    #mc = pylibmc.Client(addresses, binary=True,behaviors={"tcp_nodelay": True,"ketama": True})
+    #pool = pylibmc.ClientPool(mc, 10)
     for n in range(200):
-        mc.set('bench_key_%d' % n, 'bench_value_%d' % n)
+        client.set('bench_key_%d' % n, 'bench_value_%d' % n)
 
     # run and print results
-    result = run(pool, target=args.target)
+    result = run(client, target=args.target)
     print("exp. time: %f seconds\navg. rps: %f" % (result[1], result[0]))
 
