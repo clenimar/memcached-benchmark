@@ -30,15 +30,18 @@ def run(client, target=1000000):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("address", type=str, help="where's my memcached?")
+    parser.add_argument("addresses", type=str, help="where's my memcached?")
     parser.add_argument("--target", default=1000000, type=int, help="how many requests to send")
     args = parser.parse_args()
-
+    
+    addresses = args.addresses.split(',')
+    print(addresses)
     # start client and load memcached w/ 200 keys
-    mc = pylibmc.Client([args.address])
+    mc = pylibmc.Client(addresses, binary=True)
     for n in range(200):
         mc.set('bench_key_%d' % n, 'bench_value_%d' % n)
-    
+
     # run and print results
     result = run(mc, target=args.target)
     print("exp. time: %f seconds\navg. rps: %f" % (result[1], result[0]))
+
