@@ -41,7 +41,7 @@ if __name__ == "__main__":
     addresses = args.addresses.split(',')
     print(addresses)
     # start client and load memcached w/ 200 keys
-    mc = pylibmc.Client(addresses, binary=True)
+    mc = pylibmc.Client(addresses, binary=True,behaviors={"tcp_nodelay": True,"ketama": True})
     for n in range(200):
         mc.set('bench_key_%d' % n, 'bench_value_%d' % n)
 
